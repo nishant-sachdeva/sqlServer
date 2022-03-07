@@ -16,21 +16,39 @@ MetaCommandResult do_meta_command(InputBuffer *inputBuffer) {
     }
 }
 
-PrepareResult prepare_statement(InputBuffer* inputBuffer, Statement* statement) {
-    if (strncmp(inputBuffer->buffer, "insert", 6) == 0) {
-        statement->type = STATEMENT_INSERT;
-        int argsAssigned = sscanf(
-                                inputBuffer->buffer,
-                                "insert %d %s %s",
-                                &(statement->rowToInsert.id),
-                                statement->rowToInsert.userName,
-                                statement->rowToInsert.email
-                            );
+PrepareResult prepare_insert(InputBuffer* inputBuffer, Statement* statement) {
+    statement->type = STATEMENT_INSERT;
+
+    char* keyword = strtok(inputBuffer->buffer, " ");
+    char* idString = strtok(NULL, " ");
+    char* userName = strtok(NULL, " ");
+    char* email = strtok(NULL, " ");
+
+    if (idString == NULL || userName == NULL || email == NULL)
+        return PREPARE_SYNTAX_ERROR;
     
-        if (argsAssigned < 3)
-            return PREPARE_SYNTAX_ERROR;
-        return PREPARE_SUCCESS;
-    } else if (strcmp(inputBuffer->buffer, "select") == 0) {
+    int id = atoi(idString);
+    if (id<0)
+        return PREPARE_NEGATIVE_ID;
+    
+    if (strlen(userName) > COLUMN_USERNAME_SIZE)
+        return PREPARE_STRING_TOO_LONG;
+    
+    if (strlen(email) > COLUMN_EMAIL_SIZE)
+        return PREPARE_STRING_TOO_LONG;
+    
+    statement->rowToInsert.id = id;
+    strcpy(statement->rowToInsert.userName, userName);
+    strcpy(statement->rowToInsert.email, email);
+
+    return PREPARE_SUCCESS;
+}
+
+
+PrepareResult prepare_statement(InputBuffer* inputBuffer, Statement* statement) {
+    if (strncmp(inputBuffer->buffer, "insert", 6) == 0)
+            return prepare_insert(inputBuffer, statement);
+    else if (strcmp(inputBuffer->buffer, "select") == 0) {
         statement->type = STATEMENT_SELECT;
         return PREPARE_SUCCESS;
     } else {
