@@ -3,6 +3,7 @@
         "cstdio": "c",
         "type_traits": "c",
         "typeinfo": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "exec.h": "c"
     }
 }

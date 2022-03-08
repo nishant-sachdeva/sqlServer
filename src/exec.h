@@ -3,12 +3,14 @@
 #include "setup.h"
 #include "row.h"
 #include "table.h"
+#include "database.h"
 
 #include <stdbool.h>
 #include <string.h>
 
-MetaCommandResult do_meta_command(InputBuffer *inputBuffer) {
+MetaCommandResult do_meta_command(InputBuffer *inputBuffer, Table *table) {
     if (strcmp(inputBuffer->buffer, ".exit") == 0) {
+        db_close(table);
         printf("Exiting...\n");
         exit(EXIT_SUCCESS);
     } else {
